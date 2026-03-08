@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калейдоскоп — Мини-сериалы</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__left">
+      <button class="icon-btn" aria-label="Открыть меню">☰</button>
+      <div class="brand">
+        <span class="brand__mark">▶</span>
+        <span class="brand__name">Калейдоскоп</span>
+      </div>
+    </div>
+
+    <div class="topbar__search">
+      <input id="searchInput" type="search" placeholder="Поиск мини-сериала" />
+      <button id="searchBtn" class="search-btn">Найти</button>
+    </div>
+
+    <div class="topbar__right">
+      <button class="icon-btn" aria-label="Загрузки">⬆</button>
+      <button class="icon-btn" aria-label="Уведомления">🔔</button>
+      <div class="avatar" aria-label="Профиль">К</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <nav>
+        <a class="sidebar__link sidebar__link--active" href="#">Главная</a>
+        <a class="sidebar__link" href="#">Тренды</a>
+        <a class="sidebar__link" href="#">Подписки</a>
+        <a class="sidebar__link" href="#">Коллекции</a>
+        <a class="sidebar__link" href="#">Смотреть позже</a>
+      </nav>
+      <div class="sidebar__line"></div>
+      <p class="sidebar__title">Категории</p>
+      <div class="chips" id="categoryChips">
+        <button class="chip chip--active" data-category="all">Все</button>
+        <button class="chip" data-category="драма">Драма</button>
+        <button class="chip" data-category="триллер">Триллер</button>
+        <button class="chip" data-category="комедия">Комедия</button>
+        <button class="chip" data-category="детектив">Детектив</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <h1 class="page-title">Мини-сериалы для вечернего просмотра</h1>
+      <p class="page-subtitle">Новые эпизоды, тренды и авторские подборки на «Калейдоскопе».</p>
+
+      <section id="serialGrid" class="grid" aria-live="polite"></section>
+    </main>
+  </div>
+
+  <template id="cardTemplate">
+    <article class="card">
+      <div class="thumb"></div>
+      <div class="card__body">
+        <h2 class="card__title"></h2>
+        <p class="card__meta"></p>
+        <p class="card__desc"></p>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
