@@ -6,18 +6,18 @@
   }
 ];
 
+const playerPanel = document.getElementById("playerPanel");
 const videoWrap = document.getElementById("videoWrap");
 const player = document.getElementById("mainPlayer");
 const playerTitle = document.getElementById("playerTitle");
-const placeholder = document.getElementById("playerPlaceholder");
 const list = document.getElementById("videoList");
 const itemTemplate = document.getElementById("videoItemTemplate");
 
 function playVideo(video, activeButton) {
   player.src = video.embedUrl;
   playerTitle.textContent = video.title;
+  playerPanel.classList.remove("is-hidden");
   videoWrap.classList.remove("is-hidden");
-  placeholder.classList.add("is-hidden");
 
   list.querySelectorAll(".video-item").forEach((item) => item.classList.remove("is-active"));
   if (activeButton) {
