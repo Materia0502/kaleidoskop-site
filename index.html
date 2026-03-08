@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калейдоскоп — Сериалы</title>
+  <title>Калейдоскоп — Видео</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -19,14 +19,8 @@
     </div>
 
     <div class="topbar__search">
-      <input id="searchInput" type="search" placeholder="Поиск сериала" />
-      <button id="searchBtn" class="search-btn">Найти</button>
-    </div>
-
-    <div class="topbar__right">
-      <button class="icon-btn" aria-label="Загрузки">⬆</button>
-      <button class="icon-btn" aria-label="Уведомления">🔔</button>
-      <div class="avatar" aria-label="Профиль">К</div>
+      <input id="videoIdInput" type="search" placeholder="Вставьте YouTube Video ID" />
+      <button id="loadVideoBtn" class="search-btn">Загрузить</button>
     </div>
   </header>
 
@@ -34,34 +28,25 @@
     <aside class="sidebar">
       <nav>
         <a class="sidebar__link sidebar__link--active" href="#">Главная</a>
-        <a class="sidebar__link" href="#">Коллекции</a>
       </nav>
-      <div class="sidebar__line"></div>
-      <p class="sidebar__title">Категории</p>
-      <div class="chips" id="categoryChips">
-        <button class="chip chip--active" data-category="all">Все</button>
-        <button class="chip" data-category="драма">Драма</button>
-        <button class="chip" data-category="триллер">Триллер</button>
-        <button class="chip" data-category="комедия">Комедия</button>
-        <button class="chip" data-category="детектив">Детектив</button>
-      </div>
     </aside>
 
     <main class="content">
-      <section id="serialGrid" class="grid" aria-live="polite"></section>
+      <section class="player-panel">
+        <div class="video-wrap">
+          <iframe
+            id="mainPlayer"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            title="Плеер"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+          ></iframe>
+        </div>
+        <h1 id="playerTitle" class="player-title">Ваше видео</h1>
+      </section>
     </main>
   </div>
-
-  <template id="cardTemplate">
-    <article class="card">
-      <div class="thumb"></div>
-      <div class="card__body">
-        <h2 class="card__title"></h2>
-        <p class="card__meta"></p>
-        <p class="card__desc"></p>
-      </div>
-    </article>
-  </template>
 
   <script src="script.js"></script>
 </body>
