@@ -20,10 +20,6 @@ function render() {
   grid.innerHTML = "";
 
   if (!filtered.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty";
-    empty.textContent = "Список сериалов пуст.";
-    grid.appendChild(empty);
     return;
   }
 
@@ -63,3 +59,4 @@ chips.addEventListener("click", (event) => {
 });
 
 render();
+
