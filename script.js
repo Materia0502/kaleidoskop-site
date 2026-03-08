@@ -10,8 +10,17 @@ const playerPanel = document.getElementById("playerPanel");
 const videoWrap = document.getElementById("videoWrap");
 const player = document.getElementById("mainPlayer");
 const playerTitle = document.getElementById("playerTitle");
+const backHomeBtn = document.getElementById("backHomeBtn");
 const list = document.getElementById("videoList");
 const itemTemplate = document.getElementById("videoItemTemplate");
+
+function showHomeView() {
+  player.src = "about:blank";
+  playerTitle.textContent = "";
+  playerPanel.classList.add("is-hidden");
+  videoWrap.classList.add("is-hidden");
+  list.querySelectorAll(".video-item").forEach((item) => item.classList.remove("is-active"));
+}
 
 function playVideo(video, activeButton) {
   player.src = video.embedUrl;
@@ -38,4 +47,5 @@ function renderList() {
   });
 }
 
+backHomeBtn.addEventListener("click", showHomeView);
 renderList();
