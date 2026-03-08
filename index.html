@@ -27,20 +27,35 @@
     </aside>
 
     <main class="content">
-      <section class="video-panel">
-        <h1 class="player-title">Видео недели</h1>
-        <div class="video-wrap">
-          <iframe
-            src="https://vk.com/video_ext.php?oid=-222378310&id=456239380&access_key=e2ac15f282f4b995dd&hd=2"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowfullscreen
-            title="VK Video"
-          ></iframe>
-        </div>
-        <a class="video-link" href="https://vk.ru/video-222378310_456239380?access_key=e2ac15f282f4b995dd" target="_blank" rel="noopener noreferrer">Открыть видео в VK</a>
+      <section class="watch-layout">
+        <article class="player-panel">
+          <div class="video-wrap is-hidden" id="videoWrap">
+            <iframe
+              id="mainPlayer"
+              src="about:blank"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowfullscreen
+              title="Плеер"
+            ></iframe>
+          </div>
+          <p id="playerPlaceholder" class="player-placeholder">Выберите видео справа для просмотра</p>
+          <h1 id="playerTitle" class="player-title"></h1>
+        </article>
+
+        <aside class="playlist-panel">
+          <h2 class="playlist-title">Список видео</h2>
+          <div id="videoList" class="video-list"></div>
+        </aside>
       </section>
     </main>
   </div>
+
+  <template id="videoItemTemplate">
+    <button class="video-item" type="button">
+      <span class="video-item__title"></span>
+      <span class="video-item__meta"></span>
+    </button>
+  </template>
 
   <script src="script.js"></script>
 </body>
