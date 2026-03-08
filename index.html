@@ -17,11 +17,6 @@
         <span class="brand__name">Калейдоскоп</span>
       </div>
     </div>
-
-    <div class="topbar__search">
-      <input id="videoIdInput" type="search" placeholder="Вставьте YouTube Video ID" />
-      <button id="loadVideoBtn" class="search-btn">Загрузить</button>
-    </div>
   </header>
 
   <div class="layout">
@@ -32,18 +27,8 @@
     </aside>
 
     <main class="content">
-      <section id="playerPanel" class="player-panel is-hidden">
-        <div class="video-wrap">
-          <iframe
-            id="mainPlayer"
-            src="about:blank"
-            title="Плеер"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-          ></iframe>
-        </div>
-        <h1 id="playerTitle" class="player-title">Ваше видео</h1>
+      <section class="notice-panel">
+        <h1 class="player-title">Видео добавляет только администратор</h1>
       </section>
     </main>
   </div>
@@ -51,4 +36,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
