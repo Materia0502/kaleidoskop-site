@@ -8,6 +8,7 @@ const ROOT = __dirname;
 const USERS_FILE = path.join(ROOT, "data", "users.json");
 
 const sessions = new Map();
+let memoryUsers = [];
 
 const videoCatalog = [
   {
@@ -29,13 +30,25 @@ function ensureUsersFile() {
 
 function readUsers() {
   ensureUsersFile();
-  const raw = fs.readFileSync(USERS_FILE, "utf8");
-  const data = JSON.parse(raw || "{}");
-  return Array.isArray(data.users) ? data.users : [];
+  try {
+    const raw = fs.readFileSync(USERS_FILE, "utf8").replace(/^\uFEFF/, "");
+    const data = JSON.parse(raw || "{}");
+    const users = Array.isArray(data.users) ? data.users : [];
+    memoryUsers = users;
+    return users;
+  } catch (error) {
+    console.warn("Could not read users.json, using in-memory users:", error.message);
+    return memoryUsers;
+  }
 }
 
 function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2));
+  memoryUsers = users;
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify({ users }, null, 2));
+  } catch (error) {
+    console.warn("Could not write users.json, keeping users in memory:", error.message);
+  }
 }
 
 function sendJson(res, status, payload) {
