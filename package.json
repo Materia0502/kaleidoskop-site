@@ -1,0 +1,10 @@
+﻿{
+  "name": "kaleidoskop-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Kaleidoskop with subscription-gated video access",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

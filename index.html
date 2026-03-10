@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Калейдоскоп — Видео</title>
+  <title>Калейдоскоп — Подписка</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -12,43 +12,51 @@
 <body>
   <header class="topbar">
     <div class="topbar__left">
-      <button class="icon-btn" aria-label="Открыть меню">☰</button>
       <div class="brand">
         <span class="brand__name">Калейдоскоп</span>
       </div>
     </div>
+
+    <div class="auth-area" id="authArea">
+      <div id="guestBox" class="auth-box">
+        <input id="emailInput" type="email" placeholder="Email" />
+        <input id="passwordInput" type="password" placeholder="Пароль (мин. 6)" />
+        <button id="loginBtn" class="btn">Войти</button>
+        <button id="registerBtn" class="btn btn-muted">Регистрация</button>
+      </div>
+
+      <div id="userBox" class="auth-box is-hidden">
+        <span id="userEmail" class="user-email"></span>
+        <span id="subStatus" class="sub-status"></span>
+        <button id="activateBtn" class="btn">Оформить подписку</button>
+        <button id="logoutBtn" class="btn btn-muted">Выйти</button>
+      </div>
+    </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <nav>
-        <a class="sidebar__link sidebar__link--active" href="#">Главная</a>
-      </nav>
-    </aside>
+  <main class="content">
+    <section class="watch-layout">
+      <article id="playerPanel" class="player-panel is-hidden">
+        <div class="video-wrap" id="videoWrap">
+          <iframe
+            id="mainPlayer"
+            src="about:blank"
+            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+            allowfullscreen
+            title="Плеер"
+          ></iframe>
+        </div>
+        <h1 id="playerTitle" class="player-title"></h1>
+        <button id="backHomeBtn" class="back-btn" type="button">На главную</button>
+      </article>
 
-    <main class="content">
-      <section class="watch-layout">
-        <article id="playerPanel" class="player-panel is-hidden">
-          <div class="video-wrap is-hidden" id="videoWrap">
-            <iframe
-              id="mainPlayer"
-              src="about:blank"
-              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-              allowfullscreen
-              title="Плеер"
-            ></iframe>
-          </div>
-          <h1 id="playerTitle" class="player-title"></h1>
-          <button id="backHomeBtn" class="back-btn" type="button">На главную</button>
-        </article>
-
-        <aside class="playlist-panel">
-          <h2 class="playlist-title">Список видео</h2>
-          <div id="videoList" class="video-list"></div>
-        </aside>
-      </section>
-    </main>
-  </div>
+      <aside class="playlist-panel">
+        <h2 class="playlist-title">Список видео</h2>
+        <p id="gateMessage" class="gate-message">Войдите в аккаунт и активируйте подписку, чтобы смотреть видео.</p>
+        <div id="videoList" class="video-list"></div>
+      </aside>
+    </section>
+  </main>
 
   <template id="videoItemTemplate">
     <button class="video-item" type="button">
