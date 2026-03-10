@@ -1,5 +1,4 @@
 ﻿const http = require("http");
-const https = require("https");
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -7,12 +6,6 @@ const crypto = require("crypto");
 const PORT = process.env.PORT || 3000;
 const ROOT = __dirname;
 const USERS_FILE = path.join(ROOT, "data", "users.json");
-
-const SHOP_ID = process.env.YOOKASSA_SHOP_ID || "";
-const SECRET_KEY = process.env.YOOKASSA_SECRET_KEY || "";
-const APP_BASE_URL = process.env.APP_BASE_URL || "";
-const SUBSCRIPTION_PRICE_RUB = 99;
-const SUBSCRIPTION_DAYS = 30;
 
 const sessions = new Map();
 let memoryUsers = [];
@@ -140,71 +133,6 @@ function isSubscriptionActive(user) {
   return Date.now() < new Date(user.subscriptionExpiresAt).getTime();
 }
 
-function extendSubscription(user) {
-  const now = Date.now();
-  const prevExpiry = user.subscriptionExpiresAt ? new Date(user.subscriptionExpiresAt).getTime() : 0;
-  const base = Math.max(now, prevExpiry);
-  const newExpiry = new Date(base + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000).toISOString();
-  user.subscriptionActive = true;
-  user.subscriptionExpiresAt = newExpiry;
-}
-
-function resolveBaseUrl(req) {
-  if (APP_BASE_URL) return APP_BASE_URL.replace(/\/$/, "");
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers.host;
-  return `${proto}://${host}`;
-}
-
-function yookassaEnabled() {
-  return Boolean(SHOP_ID && SECRET_KEY);
-}
-
-function yookassaRequest(method, endpoint, body) {
-  return new Promise((resolve, reject) => {
-    const payload = body ? JSON.stringify(body) : "";
-    const auth = Buffer.from(`${SHOP_ID}:${SECRET_KEY}`).toString("base64");
-    const options = {
-      hostname: "api.yookassa.ru",
-      path: `/v3${endpoint}`,
-      method,
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(payload),
-        "Idempotence-Key": crypto.randomUUID()
-      }
-    };
-
-    const request = https.request(options, (response) => {
-      let data = "";
-      response.on("data", (chunk) => {
-        data += chunk;
-      });
-      response.on("end", () => {
-        let parsed = {};
-        try {
-          parsed = data ? JSON.parse(data) : {};
-        } catch (_e) {
-          parsed = {};
-        }
-
-        if (response.statusCode >= 200 && response.statusCode < 300) {
-          resolve(parsed);
-          return;
-        }
-
-        const description = parsed.description || parsed.type || "Ошибка ЮKassa";
-        reject(new Error(description));
-      });
-    });
-
-    request.on("error", reject);
-    if (payload) request.write(payload);
-    request.end();
-  });
-}
-
 function serveStatic(req, res) {
   let filePath = req.url === "/" ? "/index.html" : req.url;
   filePath = filePath.split("?")[0];
@@ -252,10 +180,7 @@ function serveStatic(req, res) {
 }
 
 async function handleApi(req, res) {
-  const requestUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-  const pathname = requestUrl.pathname;
-
-  if (req.method === "GET" && pathname === "/api/auth/me") {
+  if (req.method === "GET" && req.url === "/api/auth/me") {
     const user = getCurrentUser(req);
     if (!user) return sendJson(res, 200, { user: null });
 
@@ -273,7 +198,7 @@ async function handleApi(req, res) {
     return sendJson(res, 200, { user: sanitizeUser(user) });
   }
 
-  if (req.method === "POST" && pathname === "/api/auth/register") {
+  if (req.method === "POST" && req.url === "/api/auth/register") {
     let body;
     try {
       body = await readBody(req);
@@ -307,7 +232,7 @@ async function handleApi(req, res) {
     return sendJson(res, 201, { user: sanitizeUser(user) });
   }
 
-  if (req.method === "POST" && pathname === "/api/auth/login") {
+  if (req.method === "POST" && req.url === "/api/auth/login") {
     let body;
     try {
       body = await readBody(req);
@@ -332,103 +257,31 @@ async function handleApi(req, res) {
     return sendJson(res, 200, { user: sanitizeUser(user) });
   }
 
-  if (req.method === "POST" && pathname === "/api/auth/logout") {
+  if (req.method === "POST" && req.url === "/api/auth/logout") {
     clearSession(req, res);
     return sendJson(res, 200, { ok: true });
   }
 
-  if (req.method === "POST" && pathname === "/api/subscription/create-payment") {
+  if (req.method === "POST" && req.url === "/api/subscription/activate") {
     const current = getCurrentUser(req);
     if (!current) return sendJson(res, 401, { error: "Нужен вход в аккаунт" });
-    if (!yookassaEnabled()) {
-      return sendJson(res, 500, { error: "ЮKassa не настроена. Добавьте переменные YOOKASSA_SHOP_ID и YOOKASSA_SECRET_KEY" });
-    }
-
-    const baseUrl = resolveBaseUrl(req);
-    const payment = await yookassaRequest("POST", "/payments", {
-      amount: {
-        value: `${SUBSCRIPTION_PRICE_RUB}.00`,
-        currency: "RUB"
-      },
-      capture: true,
-      confirmation: {
-        type: "redirect",
-        return_url: `${baseUrl}/?payment=return`
-      },
-      description: `Подписка Калейдоскоп ${SUBSCRIPTION_PRICE_RUB} RUB / месяц`,
-      metadata: {
-        user_email: current.email,
-        plan: "monthly_99_rub"
-      }
-    });
-
-    return sendJson(res, 200, {
-      paymentId: payment.id,
-      confirmationUrl: payment.confirmation && payment.confirmation.confirmation_url
-    });
-  }
-
-  if (req.method === "GET" && pathname === "/api/subscription/confirm") {
-    const current = getCurrentUser(req);
-    if (!current) return sendJson(res, 401, { error: "Нужен вход в аккаунт" });
-    if (!yookassaEnabled()) {
-      return sendJson(res, 500, { error: "ЮKassa не настроена" });
-    }
-
-    const paymentId = requestUrl.searchParams.get("paymentId");
-    if (!paymentId) return sendJson(res, 400, { error: "Не передан paymentId" });
-
-    const payment = await yookassaRequest("GET", `/payments/${paymentId}`);
-    if (payment.metadata && payment.metadata.user_email && payment.metadata.user_email !== current.email) {
-      return sendJson(res, 403, { error: "Платеж привязан к другому аккаунту" });
-    }
-
-    if (payment.status !== "succeeded") {
-      return sendJson(res, 200, {
-        ok: false,
-        status: payment.status,
-        message: "Платеж пока не завершен"
-      });
-    }
 
     const users = readUsers();
     const idx = users.findIndex((u) => u.email === current.email);
     if (idx === -1) return sendJson(res, 404, { error: "Пользователь не найден" });
 
-    extendSubscription(users[idx]);
+    const expiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    users[idx].subscriptionActive = true;
+    users[idx].subscriptionExpiresAt = expiry;
     writeUsers(users);
 
     return sendJson(res, 200, {
-      ok: true,
-      status: payment.status,
-      user: sanitizeUser(users[idx])
+      user: sanitizeUser(users[idx]),
+      note: "MVP: подписка активирована без реального платежа"
     });
   }
 
-  if (req.method === "POST" && pathname === "/api/yookassa/webhook") {
-    let body;
-    try {
-      body = await readBody(req);
-    } catch (_e) {
-      return sendJson(res, 400, { error: "Некорректный JSON" });
-    }
-
-    const event = body && body.event;
-    const object = body && body.object;
-
-    if (event === "payment.succeeded" && object && object.metadata && object.metadata.user_email) {
-      const users = readUsers();
-      const idx = users.findIndex((u) => u.email === object.metadata.user_email);
-      if (idx !== -1) {
-        extendSubscription(users[idx]);
-        writeUsers(users);
-      }
-    }
-
-    return sendJson(res, 200, { ok: true });
-  }
-
-  if (req.method === "GET" && pathname === "/api/videos") {
+  if (req.method === "GET" && req.url === "/api/videos") {
     const user = getCurrentUser(req);
     const canWatch = isSubscriptionActive(user);
 
@@ -439,16 +292,16 @@ async function handleApi(req, res) {
       locked: !canWatch
     }));
 
-    return sendJson(res, 200, { videos: list, canWatch, priceRub: SUBSCRIPTION_PRICE_RUB });
+    return sendJson(res, 200, { videos: list, canWatch });
   }
 
-  if (req.method === "GET" && pathname.startsWith("/api/videos/") && pathname.endsWith("/embed")) {
+  if (req.method === "GET" && req.url.startsWith("/api/videos/") && req.url.endsWith("/embed")) {
     const user = getCurrentUser(req);
     if (!isSubscriptionActive(user)) {
       return sendJson(res, 403, { error: "Нужна активная подписка" });
     }
 
-    const parts = pathname.split("/");
+    const parts = req.url.split("/");
     const videoId = parts[3];
     const video = videoCatalog.find((v) => v.id === videoId);
     if (!video) return sendJson(res, 404, { error: "Видео не найдено" });
