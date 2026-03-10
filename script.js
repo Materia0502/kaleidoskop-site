@@ -19,6 +19,7 @@ const subStatus = document.getElementById("subStatus");
 
 let currentUser = null;
 let videos = [];
+let priceRub = 99;
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -40,7 +41,7 @@ function showToast(message, type = "ok") {
   toast.className = `toast ${type}`;
   toast.textContent = message;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2500);
+  setTimeout(() => toast.remove(), 3000);
 }
 
 function showHomeView() {
@@ -67,9 +68,10 @@ function renderAuth() {
     activateBtn.classList.add("is-hidden");
     gateMessage.textContent = "Подписка активна. Выберите видео из списка.";
   } else {
-    subStatus.textContent = "Подписка не активна";
+    subStatus.textContent = `Подписка не активна (${priceRub} ₽/мес)`;
     activateBtn.classList.remove("is-hidden");
-    gateMessage.textContent = "Оформите подписку, чтобы открыть просмотр.";
+    activateBtn.textContent = `Оформить ${priceRub} ₽/мес`;
+    gateMessage.textContent = `Оформите подписку ${priceRub} ₽/мес, чтобы открыть просмотр.`;
   }
 }
 
@@ -115,6 +117,7 @@ async function refreshSessionAndVideos() {
 
   const videoData = await api("/api/videos");
   videos = videoData.videos;
+  priceRub = videoData.priceRub || 99;
 
   if (!videoData.canWatch) {
     showHomeView();
@@ -146,6 +149,33 @@ async function authAction(type) {
   }
 }
 
+async function handlePaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const isReturn = params.get("payment") === "return";
+  if (!isReturn) return;
+
+  const paymentId = localStorage.getItem("pendingPaymentId");
+  if (!paymentId) {
+    showToast("Не найден pending payment. Попробуйте оплатить заново.", "error");
+    return;
+  }
+
+  try {
+    const result = await api(`/api/subscription/confirm?paymentId=${encodeURIComponent(paymentId)}`);
+    if (result.ok) {
+      localStorage.removeItem("pendingPaymentId");
+      showToast("Оплата подтверждена. Подписка активирована.", "ok");
+    } else {
+      showToast(`Статус платежа: ${result.status}. Обновите страницу через несколько секунд.`, "error");
+    }
+  } catch (error) {
+    showToast(error.message, "error");
+  } finally {
+    const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+    window.history.replaceState({}, "", cleanUrl);
+  }
+}
+
 loginBtn.addEventListener("click", () => authAction("login"));
 registerBtn.addEventListener("click", () => authAction("register"));
 
@@ -162,10 +192,13 @@ logoutBtn.addEventListener("click", async () => {
 
 activateBtn.addEventListener("click", async () => {
   try {
-    const result = await api("/api/subscription/activate", { method: "POST" });
-    currentUser = result.user;
-    await refreshSessionAndVideos();
-    showToast("Подписка активирована", "ok");
+    const payment = await api("/api/subscription/create-payment", { method: "POST" });
+    if (!payment.confirmationUrl) {
+      throw new Error("Не удалось получить ссылку на оплату");
+    }
+
+    localStorage.setItem("pendingPaymentId", payment.paymentId);
+    window.location.href = payment.confirmationUrl;
   } catch (error) {
     showToast(error.message, "error");
   }
@@ -173,4 +206,12 @@ activateBtn.addEventListener("click", async () => {
 
 backHomeBtn.addEventListener("click", showHomeView);
 
-refreshSessionAndVideos().catch((error) => showToast(error.message, "error"));
+(async function init() {
+  try {
+    await refreshSessionAndVideos();
+    await handlePaymentReturn();
+    await refreshSessionAndVideos();
+  } catch (error) {
+    showToast(error.message, "error");
+  }
+})();
