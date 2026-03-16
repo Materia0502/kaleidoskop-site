@@ -1,11 +1,8 @@
-﻿:root {
+:root {
   --bg: #0f0f10;
   --panel: #181819;
-  --panel-2: #222226;
   --text: #f2f2f3;
   --muted: #b8b8be;
-  --danger: #cf4040;
-  --ok: #33b56f;
 }
 
 * {
@@ -23,8 +20,6 @@ body {
   min-height: 64px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   padding: 10px 16px;
   border-bottom: 1px solid #2d2d33;
   background: rgba(15, 15, 16, 0.95);
@@ -33,57 +28,6 @@ body {
 .brand__name {
   font-size: 1.1rem;
   font-weight: 700;
-}
-
-.auth-area {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.auth-box {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.auth-box input {
-  height: 34px;
-  border: 1px solid #33343d;
-  border-radius: 8px;
-  background: #121218;
-  color: var(--text);
-  padding: 0 10px;
-}
-
-.user-email {
-  font-size: 0.9rem;
-  color: #d9d9df;
-}
-
-.sub-status {
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.btn {
-  height: 34px;
-  border: 1px solid #3a3a43;
-  border-radius: 8px;
-  background: #2a2a34;
-  color: var(--text);
-  padding: 0 10px;
-  cursor: pointer;
-}
-
-.btn:hover {
-  background: #32323f;
-}
-
-.btn-muted {
-  background: #1f1f28;
 }
 
 .content {
@@ -146,12 +90,6 @@ body {
   font-size: 1rem;
 }
 
-.gate-message {
-  margin: 0 0 12px;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
 .video-list {
   display: grid;
   gap: 8px;
@@ -165,10 +103,6 @@ body {
   text-align: left;
   padding: 10px;
   cursor: pointer;
-}
-
-.video-item.is-locked {
-  opacity: 0.65;
 }
 
 .video-item:hover,
@@ -218,17 +152,5 @@ body {
 @media (max-width: 1080px) {
   .watch-layout {
     grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 760px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .auth-area {
-    width: 100%;
-    justify-content: flex-start;
   }
 }
